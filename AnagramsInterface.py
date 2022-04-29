@@ -1,31 +1,78 @@
 import os
 from itertools import combinations, permutations
 import re
+from pathlib import Path
 
 def getWords():
-    pathMsg = "Please enter the path to the Collins Scrabble Words txt File: "
-    path = input(pathMsg)
+    """
+    Loads in .txt file containing the Collins List of Scrabble Words (2019) and returns the words in a set
+    Collins_Scrabble_Words_(2019).txt must be in the current directory
+
+    Returns:
+        engWords (set) : List containing the words in the Collins List of Scrablle Words (2019)
+    """
+    path = str(Path.cwd())
+    path += "/Collins_Scrabble_Words_(2019).txt"
     with open(path) as words:
         engWords = set(word.strip().lower() for word in words)
-    #print(engWords)
     return engWords
 
 def getLets():
-    letsMsg = "Please enter up to 8 letters for the anagram solver: "
-    lets = input(letsMsg)
-    lets = re.sub(r"\s+", "", lets, flags=re.UNICODE)
+    """
+    Asks user for a sequence of up to 8 letters and returns the letters as a string
+
+    Returns:
+        lets (string) : Concatenation of the user-entered letters
+    """
+    areLets = False
+    while not areLets:
+        areLets = True
+        letsMsg = "Please enter up to 8 letters for the anagram solver: "
+        lets = input(letsMsg)
+        lets = re.sub(r"\s+", "", lets, flags=re.UNICODE)
+        for let in lets:
+            if not let.isalpha():
+                areLets = False
+        if not areLets:
+            print("One or more of the characters entered are not letters")
     lets = lets.lower()
     return lets
 
 def getMode():
-    modeMsg = "Please enter 1 to display the words organized by length and 2 to display the words from longest to shortest: "
-    mode = int(input(modeMsg))
-    return mode
+    """
+    Asks the user to enter a digit representing the display mode for the anagrams
+
+    Returns:
+        mode (int) : 1 represents the mode where the words will be shown in categories based on lengths
+                     2 represents the mode where the words will be displayed in order of decreasing length
+    """
+    isMode = False
+    while not isMode:
+        isMode = True
+        modeMsg = "Please enter 1 to display the words categorized by length and 2 to display the words from longest to shortest: "
+        mode = input(modeMsg)
+        if not mode.isdigit():
+            isMode = False
+        
+        elif not (int(mode) == 1 or int(mode) == 2):
+            isMode = False
+
+    return int(mode)
 
 def findAnagrams(lets, words):
+    """
+    Finds and returns all anagrams made up of the user-entered letters
+
+    Parameters:
+        lets (string) : The user-entered letters
+        words (set) : The words in the Collins List of Scrabble Words (2019) 
+
+    Returns:
+        anagrams (list) : Contains all the valid anagrams containing only the user-entered letters
+    """
     anagrams = []
     for i in range(1, len(lets)+1):
-        combs = [j for j in permutations(list(lets), i)]
+        combs = [j for j in permutations(list(lets), i)] # Computes all possible arrangements of the letters 
         for comb in list(combs): 
             word = "".join(comb)
             if word in words and not word in anagrams:
@@ -33,20 +80,60 @@ def findAnagrams(lets, words):
     return anagrams
 
 
-def orgMode(anagrams):
-    #Program utilizes the Collins List of Scrabble Words (2019) to verify words
-    
+def catMode(anagrams):
+    """
+    Displays the anagrams in categories based on length
+
+    Parameters: 
+        anagrams (list) : Contains all the valid anagrams containing only the user-entered letters
+    """
+    if len(anagrams) == 0:
+        print("No anagrams were found")
+        return
+    maxLen = len(anagrams[-1])
+    tempList = []
+    l = maxLen
+    i = 1
+    L = 0
+    for word in reversed(anagrams):
+        if not len(word) == l:
+            tempList = sorted(tempList)
+            print(l, "Letter Words:", ' '.join(tempList))
+            L += len(tempList)
+            l = len(word)
+            tempList = []
+            tempList.append(word)
+            if i == len(anagrams):
+                print(l, "Letter Words:", ' '.join(tempList))
+                L += 1
+        elif i == len(anagrams):
+            tempList.append(word)
+            tempList = sorted(tempList)
+            print(l, "Letter Words:", ' '.join(tempList))
+            L+=len(tempList)
+        else:
+            tempList.append(word)
+        i += 1
+    print(L, "number of anagrams: ", len(anagrams))
     return 
-        
-    
 
 
-def rankMode(validWords):
+def rankMode(anagrams):
+    """
+    Displays the anagrams in decreasing order by length
+
+    Parameters:
+        anagrams (list) : Contains all the valid anagrams containing only the user-entered letters
+    """
+    if len(anagrams) == 0:
+        print("No anagrams were found")
+        return
+
     return
     
 def main():
     """
-    Initializes and executes the game 
+    Initializes and executes the anagrams solver
     """
     print("Welcome to Anagrams Solver")
     words = getWords()
@@ -55,7 +142,7 @@ def main():
     print(anagrams)
     mode = getMode()
     if mode == 1:
-        orgMode(anagrams)
+        catMode(anagrams)
     else: 
         rankMode(anagrams)
 

@@ -45,17 +45,20 @@ def getMode():
     Returns:
         mode (int) : 1 represents the mode where the words will be shown in categories based on lengths
                      2 represents the mode where the words will be displayed in order of decreasing length
+                     3 allows the user to enter new letters
     """
     isMode = False
     while not isMode:
         isMode = True
-        modeMsg = "Please enter 1 to display the words categorized by length and 2 to display the words from longest to shortest: "
+        modeMsg = "Enter 1 to display the words categorized by length, 2 to display the words from longest to shortest, 3 to enter new letters, 4 to quit the program\n"
         mode = input(modeMsg)
         if not mode.isdigit():
             isMode = False
+            print("Please enter a valid integer")
         
-        elif not (int(mode) == 1 or int(mode) == 2):
+        elif not (int(mode) in (1, 2, 3, 4)):
             isMode = False
+            print("Please enter an integer between 1 and 4")
 
     return int(mode)
 
@@ -94,27 +97,23 @@ def catMode(anagrams):
     tempList = []
     l = maxLen
     i = 1
-    L = 0
     for word in reversed(anagrams):
         if not len(word) == l:
             tempList = sorted(tempList)
             print(l, "Letter Words:", ' '.join(tempList))
-            L += len(tempList)
             l = len(word)
             tempList = []
             tempList.append(word)
             if i == len(anagrams):
                 print(l, "Letter Words:", ' '.join(tempList))
-                L += 1
         elif i == len(anagrams):
             tempList.append(word)
             tempList = sorted(tempList)
             print(l, "Letter Words:", ' '.join(tempList))
-            L+=len(tempList)
         else:
             tempList.append(word)
         i += 1
-    print(L, "number of anagrams: ", len(anagrams))
+    #print(L, "number of anagrams: ", len(anagrams))
     return 
 
 
@@ -128,6 +127,31 @@ def rankMode(anagrams):
     if len(anagrams) == 0:
         print("No anagrams were found")
         return
+    maxLen = len(anagrams[-1])
+    tempList = []
+    l = maxLen
+    i = 1
+    j = 1 # Specifies the jth anagram in the sorted list
+    for word in reversed(anagrams):
+        if not len(word) == l:
+            tempList = sorted(tempList)
+            for sWord in tempList:
+                print(j, ": ", sWord)
+                j+=1
+            l = len(word)
+            tempList = []
+            tempList.append(word)
+            if i == len(anagrams):
+                print(j, ": ", word)
+        elif i == len(anagrams):
+            tempList.append(word)
+            tempList = sorted(tempList)
+            for sWord in tempList:
+                print(j, ": ", sWord)
+                j+=1
+        else:
+            tempList.append(word)
+        i += 1
 
     return
     
@@ -136,16 +160,24 @@ def main():
     Initializes and executes the anagrams solver
     """
     print("Welcome to Anagrams Solver")
-    words = getWords()
-    lets = getLets()
-    anagrams = findAnagrams(lets, words)
-    print(anagrams)
-    mode = getMode()
-    if mode == 1:
-        catMode(anagrams)
-    else: 
-        rankMode(anagrams)
-
+    run = True
+    while run:
+        run = False 
+        words = getWords()
+        lets = getLets()
+        anagrams = findAnagrams(lets, words)
+        dRun = True
+        while dRun:
+            mode = getMode()
+            if mode == 1:
+                catMode(anagrams)
+            elif mode == 2: 
+                rankMode(anagrams)
+            elif mode == 3:
+                run = True
+                break
+            else: 
+                return
 
 
 if __name__ == "__main__":

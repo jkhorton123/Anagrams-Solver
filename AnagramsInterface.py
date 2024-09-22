@@ -1,3 +1,4 @@
+import json
 import os
 from itertools import combinations, permutations
 import re
@@ -5,36 +6,44 @@ from pathlib import Path
 
 def getWords():
     """
-    Loads in .txt file containing the Collins List of Scrabble Words (2019) and returns the words in a set
-    Collins_Scrabble_Words_(2019).txt must be in the current directory
+    Loads in txt file containing list of all english words and returns the words in a set for O(1) lookup
+    en.txt must be in the current directory
 
     Returns:
-        engWords (set) : List containing the words in the Collins List of Scrablle Words (2019)
+        engWords (set) : Set containing all English words as keys
     """
     path = str(Path.cwd())
-    path += "/Collins_Scrabble_Words_(2019).txt"
+    path += "/en.txt"
     with open(path) as words:
         engWords = set(word.strip().lower() for word in words)
     return engWords
 
 def getLets():
     """
-    Asks user for a sequence of up to 8 letters and returns the letters as a string
+    Asks user for a sequence of between 3 and 8 letters and returns the letters as a string
 
     Returns:
         lets (string) : Concatenation of the user-entered letters
     """
-    areLets = False
-    while not areLets:
-        areLets = True
-        letsMsg = "Please enter up to 8 letters for the anagram solver: "
+    validStr = False
+    while not validStr:
+        validStr = True
+        letsMsg = "Please enter between 3 and 8 English letters for the anagram solver: "
         lets = input(letsMsg)
+        if len(lets) < 3: 
+            validStr = False
+            print("Less than 3 letters were entered")
+            continue
+        if len(lets) > 8:
+            validStr = False
+            print("More than 8 letters were entered")
+            continue
         lets = re.sub(r"\s+", "", lets, flags=re.UNICODE)
         for let in lets:
             if not let.isalpha():
-                areLets = False
-        if not areLets:
-            print("One or more of the characters entered are not letters")
+                validStr = False
+                print("One or more of the characters entered are not English letters")
+                break
     lets = lets.lower()
     return lets
 
@@ -46,6 +55,7 @@ def getMode():
         mode (int) : 1 represents the mode where the words will be shown in categories based on lengths
                      2 represents the mode where the words will be displayed in order of decreasing length
                      3 allows the user to enter new letters
+                     4 quits the program
     """
     isMode = False
     while not isMode:
@@ -64,17 +74,17 @@ def getMode():
 
 def findAnagrams(lets, words):
     """
-    Finds and returns all anagrams made up of the user-entered letters
+    Finds and returns all anagrams made up of 3 or more of the user-entered letters
 
     Parameters:
         lets (string) : The user-entered letters
-        words (set) : The words in the Collins List of Scrabble Words (2019) 
+        words (dict) : Dictionary containing all English words as keys
 
     Returns:
         anagrams (list) : Contains all the valid anagrams containing only the user-entered letters
     """
     anagrams = []
-    for i in range(1, len(lets)+1):
+    for i in range(3, len(lets)+1):
         combs = [j for j in permutations(list(lets), i)] # Computes all possible arrangements of the letters 
         for comb in list(combs): 
             word = "".join(comb)
@@ -91,7 +101,7 @@ def catMode(anagrams):
         anagrams (list) : Contains all the valid anagrams containing only the user-entered letters
     """
     if len(anagrams) == 0:
-        print("No anagrams were found")
+        print("No 3+ letter valid English anagrams were found")
         return
     maxLen = len(anagrams[-1])
     tempList = []
@@ -113,7 +123,6 @@ def catMode(anagrams):
         else:
             tempList.append(word)
         i += 1
-    #print(L, "number of anagrams: ", len(anagrams))
     return 
 
 
@@ -125,7 +134,7 @@ def rankMode(anagrams):
         anagrams (list) : Contains all the valid anagrams containing only the user-entered letters
     """
     if len(anagrams) == 0:
-        print("No anagrams were found")
+        print("No 3+ letter valid English anagrams were found")
         return
     maxLen = len(anagrams[-1])
     tempList = []
@@ -152,7 +161,6 @@ def rankMode(anagrams):
         else:
             tempList.append(word)
         i += 1
-
     return
     
 def main():
